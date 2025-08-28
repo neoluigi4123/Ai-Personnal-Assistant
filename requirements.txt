@@ -1,0 +1,6 @@
+ollama
+pyfiglet
+ddgs
+requests
+beautifulsoup4
+readability-lxml

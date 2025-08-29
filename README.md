@@ -40,11 +40,12 @@ pip install -r requirements.txt
 
 Basic configuration is in `config.py` and includes:
 
+* System Prompt
 * Model selection
 * Ollama endpoint
 * Verbose mode
 * Streaming mode
-* Cosmetic options
+* Cosmetic options...
 
 ## 💬 Commands
 

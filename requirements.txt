@@ -4,3 +4,8 @@ ddgs
 requests
 beautifulsoup4
 readability-lxml
+chardet
+python-docx
+odfpy
+striprtf
+PyPDF2

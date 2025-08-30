@@ -13,8 +13,8 @@ A lightweight CLI-based local LLM assistant.
 
 ## 🗒️ To-Do
 
-* Expend file support
 * Add vision model support
+* Expend file support
 
 ## ⚙️ Installation
 

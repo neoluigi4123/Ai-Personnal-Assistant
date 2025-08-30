@@ -11,6 +11,11 @@ A lightweight CLI-based local LLM assistant.
 * Browse the web via the assistant
 * (More features coming soon!)
 
+## 🗒️ To-Do
+
+* Expend file support
+* Add vision model support
+
 ## ⚙️ Installation
 
 1. Clone the repository:

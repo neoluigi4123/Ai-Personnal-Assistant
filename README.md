@@ -9,12 +9,15 @@ A lightweight CLI-based local LLM assistant.
 
 * Load and process text/code files
 * Browse the web via the assistant
+* Support over vision and thinking model
 * (More features coming soon!)
+
+> **Note:** Make sure to use a **tool_call** capable model.
 
 ## 🗒️ To-Do
 
-* Add vision model support
-* Expend file support
+**Nothing here!**
+*(for now)*
 
 ## ⚙️ Installation
 

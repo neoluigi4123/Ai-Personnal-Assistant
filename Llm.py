@@ -70,6 +70,12 @@ def load(model: str = DEFAULT_MODEL):
     return "model loaded"
 
 
+def get_model_capabilities(model: str = DEFAULT_MODEL):
+    info = ollama_client._request_raw("POST", "/api/show",json={"name":model}).json()
+    capabilities = info["capabilities"]
+    return capabilities
+
+
 def summarize_chat(num: int = 10, model: str = DEFAULT_MODEL):
     """Summarize the first `num` messages (after system prompt) and replace them with a summary."""
 
@@ -132,11 +138,19 @@ def get_tool_type(tool_call):
         return error_msg
 
 
-def save_context(content, role='user'):
-    context.append({
-        'role': role,
-        'content': content
-    })
+def save_context(content, role='user', image_path: list = None):
+    if image_path:
+        context.append({
+            'role': role,
+            'content': content,
+            'images': image_path
+        })
+        
+    else:
+        context.append({
+            'role': role,
+            'content': content
+        })
 
     try:
         data_str = json.dumps(context, ensure_ascii=False, indent=2)

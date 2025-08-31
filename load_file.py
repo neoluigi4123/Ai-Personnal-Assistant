@@ -9,19 +9,6 @@ from PyPDF2 import PdfReader
 def load_file(file_path: str) -> str:
     """
     Load and return the contents of a text-based file in many formats.
-
-    Supports: .txt, .py, .md, .docx, .odt, .rtf, .pdf (extendable).
-    
-    Args:
-        file_path (str): Absolute path to the file.
-    
-    Returns:
-        str: File contents as a string.
-    
-    Raises:
-        FileNotFoundError: If the file does not exist.
-        PermissionError: If the file cannot be accessed.
-        ValueError: If path is not absolute or unsupported format.
     """
     if not os.path.isabs(file_path):
         raise ValueError("Please provide an absolute file path.")
@@ -31,19 +18,7 @@ def load_file(file_path: str) -> str:
 
     ext = os.path.splitext(file_path)[1].lower()
 
-    # --- Plain text fallback with encoding detection ---
-    def read_text_file(path):
-        with open(path, "rb") as f:
-            raw = f.read()
-        detected = chardet.detect(raw)
-        encoding = detected["encoding"] or "utf-8"
-        return raw.decode(encoding, errors="replace")
-
-    # --- Format handlers ---
-    if ext in [".txt", ".py", ".md", ".json", ".csv", ".yaml", ".ini"]:
-        return read_text_file(file_path)
-
-    elif ext == ".docx":
+    if ext == ".docx":
         doc = Document(file_path)
         return "\n".join([para.text for para in doc.paragraphs])
 
@@ -66,4 +41,11 @@ def load_file(file_path: str) -> str:
         return "\n".join(text)
 
     else:
-        raise ValueError(f"Unsupported file format: {ext}")
+        try:
+            with open(file_path, "rb") as f:
+                raw = f.read()
+            detected = chardet.detect(raw)
+            encoding = detected["encoding"] or "utf-8"
+            return raw.decode(encoding, errors="replace")
+        except:
+            return("File extension not supported")

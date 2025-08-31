@@ -12,8 +12,11 @@ import json
 import threading
 import sys
 import os
+import magic
+from PIL import Image
+import load_file
 
-from Llm import chat, send_message, get_model_list, summarize_chat, save_context
+from Llm import chat, send_message, get_model_list, summarize_chat, save_context, get_model_capabilities
 import Llm
 import conf_module
 import load_file
@@ -41,6 +44,8 @@ model = None
 verbose = conf_module.load_conf('VERBOSE')
 model_ready = False
 stream = conf_module.load_conf('STREAM')
+image = None
+img_in_chat = None
 
 # Threaded model loading wrapper
 def load_model(model: str = None):
@@ -273,6 +278,10 @@ def cmd_model(args):
     global model
     if len(args) == 1:
         model = args[0]
+        capabilities = get_model_capabilities(model)
+        if img_in_chat and "vision" not in capabilities:
+            send_message(markdown_to_ansi(f"***[Model {model} doesn't have vision, please clear the chat with `/clear` or change model.]***"))
+            return
         # Reload the model with spinner
         thread = threading.Thread(target=load_model, args=(model,), daemon=True)
         thread.start()
@@ -318,9 +327,12 @@ def cmd_stream(args):
         send_message(f"Stream takes one argument but {len(args)} where given.")
 
 def cmd_clear():
+    global img_in_chat
     Llm.context = []
 
     save_context(SYSTEM_PROMPT, 'system')
+
+    img_in_chat = False
 
     send_message(markdown_to_ansi("***[Conversation Cleared]***"))
 
@@ -328,18 +340,30 @@ def cmd_show_conf():
     send_message(conf_module.load_conf())
 
 def cmd_file(args):
+    global img_in_chat
     try:
         filepath = " ".join(args)
 
-        file_content = load_file.load_file(filepath)
+        mime_type = magic.from_file(filepath, mime=True)
 
-        save_context(f"File append:\n{file_content}", "tool")
-
-        send_message(markdown_to_ansi("***[File Added]***"))
+        if mime_type.startswith("image"):
+            capabilities = get_model_capabilities()
+            if "vision" in capabilities:
+                with Image.open(filepath) as img:
+                    png_path = "/tmp/converted_image.png"
+                    img.save(png_path, "PNG")
+                    save_context("Image added.", 'system', image_path=[png_path])
+                    img_in_chat = True
+                send_message(markdown_to_ansi(f"***[Image Added: {png_path}]***"))
+            else:
+                send_message(markdown_to_ansi("***[Image cannot be added: Please use a model with vision capabilities.]***"))
+        else:
+            file_content = load_file.load_file(filepath)
+            save_context(f"File append:\n{file_content}", "tool")
+            send_message(markdown_to_ansi(f"***[File Added: {filepath}]***"))
 
     except Exception as e:
-        send_message(markdown_to_ansi("***[Please make sure the file exists and you're using the absolute path]***"))
-        print(f"Error: {e}")
+        send_message(markdown_to_ansi(f"***[Error]***: {e}"))
 
 commands = {
     "bye": {
@@ -444,6 +468,11 @@ if context_path.exists():
             Llm.context.pop()
         
         save_context(f"You've been disconnected for {format_elapsed(elapsed)}", 'system')
+
+        if any("images" in item for item in Llm.context):
+            img_in_chat = True
+        else:
+            img_in_chat = False
 
 while True:
     prompt = input("> ")

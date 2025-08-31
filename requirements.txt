@@ -9,3 +9,5 @@ python-docx
 odfpy
 striprtf
 PyPDF2
+python-magic
+pillow
